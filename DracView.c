@@ -7,12 +7,12 @@
 #include "GameView.h"
 #include "DracView.h"
 // #include "Map.h" ... if you decide to use the Map ADT
-     
+
 struct dracView {
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
     int hello;
 };
-     
+
 
 // Creates a new DracView to summarise the current state of the game
 DracView newDracView(char *pastPlays, PlayerMessage messages[])
@@ -22,8 +22,8 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
     dracView->hello = 42;
     return dracView;
 }
-     
-     
+
+
 // Frees all memory previously allocated for the DracView toBeDeleted
 void disposeDracView(DracView toBeDeleted)
 {

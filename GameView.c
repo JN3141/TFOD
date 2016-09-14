@@ -298,6 +298,7 @@ void getHistory(GameView currentView, PlayerID player,
 
 // Returns an array of LocationIDs for all directly connected locations
 //////////////////////////////////// THIS NEEDS TO BE CHANGED
+// TODO
 LocationID *connectedLocations(GameView currentView, int *numLocations,
                                LocationID from, PlayerID player,
                                Round round, int road, int rail,
@@ -378,23 +379,13 @@ static LocationID abbrevToID (char x, char y) {
         ID = UNKNOWN_LOCATION;
     }
 
-    /*
-    int i;
-    for (i = 0; i < NUM_LOCATIONS; i++) {
-        if (strcmp(playerLocation,abbrev[i]) == 0) {
-            return i;
-        }
-    }
-    */
-
     // find the ID from abbrevs[]
-    int start = 0;
+    int start = MIN_MAP_LOCATION;
     int end = MAX_MAP_LOCATION;
-    int mid = (start + end)/2;-
-    while (strcmp(abbrev[start],abbrev[end]) < 0) {
-        mid = start + (end-start)/2;
+    while (strcmp(abbrev[start],abbrev[end]) <= 0) {
+        mid = (start + end)/2;
         if (strcmp(name,abbrev[mid]) < 0) {
-            end = mid;
+            end = mid - 1;
         } else if (strcmp(name,abbrev[mid]) > 0) {
             start = mid + 1;
         } else {
