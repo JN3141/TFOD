@@ -9,8 +9,10 @@
 // #include "Map.h" ... if you decide to use the Map ADT
      
 struct hunterView {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    int hello;
+    int score;
+    int health[NUM_PLAYERS];
+    Round round;
+    LocationID location[NUM_PLAYERS][TRAIL_SIZE];
 };
      
 
@@ -27,8 +29,12 @@ HunterView newHunterView(char *pastPlays, PlayerMessage messages[])
 // Frees all memory previously allocated for the HunterView toBeDeleted
 void disposeHunterView(HunterView toBeDeleted)
 {
-    //COMPLETE THIS IMPLEMENTATION
-    free( toBeDeleted );
+    if(toBeDeleted == 0){
+        printf("Nothing to delete.");
+        return 0;
+    } else {
+        free(toBeDeleted);
+    }
 }
 
 
@@ -37,8 +43,7 @@ void disposeHunterView(HunterView toBeDeleted)
 // Get the current round
 Round giveMeTheRound(HunterView currentView)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return 0;
+    return currentView->round;
 }
 
 // Get the id of current player
@@ -51,22 +56,23 @@ PlayerID whoAmI(HunterView currentView)
 // Get the current score
 int giveMeTheScore(HunterView currentView)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return 0;
+    return currentView->score;
 }
 
 // Get the current health points for a given player
 int howHealthyIs(HunterView currentView, PlayerID player)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return 0;
+    return currentView->health[player];
 }
 
 // Get the current location id of a given player
 LocationID whereIs(HunterView currentView, PlayerID player)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return 0;
+    if(round == 0){
+        return UKNOWN_LOCATION;
+    } else {
+        return currentView->location[player][0];
+    }
 }
 
 //// Functions that return information about the history of the game
