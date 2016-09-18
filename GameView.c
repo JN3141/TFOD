@@ -109,16 +109,17 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
         }
 
         // set location and adjust trail...
+        // oldest at the front, newest at the end...
         for (j = 0; j < TRAIL_SIZE - 1; j++) {
             gameView->players[p].trail[j] = gameView->players[p].trail[j+1];
         }
         gameView->players[p].trail[TRAIL_SIZE - 1] =
-            abbrevToID(playTracker);
+            abbrevToID(playTracker[1]);
         gameView->players[p].location =
-            abbrevToID(playTracker);
+            abbrevToID(playTracker[1]);
 
         if (p == PLAYER_DRACULA) { // it's dracula!
-            // set location for dracula properly...
+            // set location for dracula properly if needed...
             if (gameView->players[p].location >= DOUBLE_BACK_1 &&
                        gameView->players[p].location <= TELEPORT) {
                 if (gameView->players[p].location == DOUBLE_BACK_1) {
@@ -158,7 +159,7 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 gameView->players[p].hp += 10;
             }
 
-            // deduce 1 point from the game score...
+            // deduct 1 point from the game score...
             if (gameView->players[p].hp > 0) {
                 gameView->score -= 1;
             }
