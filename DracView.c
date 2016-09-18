@@ -28,7 +28,7 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
 void disposeDracView(DracView toBeDeleted)
 {
     //COMPLETE THIS IMPLEMENTATION
-    free( toBeDeleted );
+    free(toBeDeleted);
 }
 
 

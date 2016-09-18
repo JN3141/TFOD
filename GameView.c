@@ -23,7 +23,7 @@ struct gameView {
     player players[NUM_PLAYERS];    // array of player data structs
 };
 
-static LocationID abbrevToID (char x, char y);
+// static LocationID abbrevToID (char x, char y); //////////////////////////////////
 
 // Creates a new GameView to summarise the current state of the game
 GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
@@ -37,7 +37,7 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
     // turns...
 
     gameView->turnNum = 0;
-    gameView->round = 0;
+    gameView->roundNum = 0;
 
     if (pastPlays[0] == 'G') {
         int i;
@@ -45,14 +45,14 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
             if (i % 8 == 0) {
                 gameView->turnNum++;
                 if (gameView->turnNum % NUM_PLAYERS == 0) {
-                    gameView->round++;
+                    gameView->roundNum++;
                 }
             }
         }
     }
 
     // setting the current player
-    gameView->currPlayer == PLAYER_LORD_GODALMING;
+    gameView->currPlayer = PLAYER_LORD_GODALMING;
 
     // setting player stats
     PlayerID p;
@@ -74,27 +74,28 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
 
 
     // actually haven't taken a turn yet? just return the basis
-    if (turnNum <= 0) {
+    if (gameView->turnNum <= 0) {
         return gameView;
     }
 
     // so we've gone somewhat into the game? time to update
     // set the current turn
-    gameView->currPlayer = gameView->numTurns % NUM_PLAYERS;
+    gameView->currPlayer = gameView->turnNum % NUM_PLAYERS;
 
     // increment player turns
     for (p = PLAYER_LORD_GODALMING; p <= PLAYER_DRACULA; p++) {
         // every player would have made at least as many turns as rounds
-        gameView->players[p].turns = gameView->round;
+        gameView->players[p].turns = gameView->roundNum;
 
         // for every turn beyond the end of the last round
-        if (p < (gameView->numTurns % NUM_PLAYERS)) {
+        if (p < (gameView->turnNum % NUM_PLAYERS)) {
             gameView->players[p].turns++;
         }
     }
 
     // now to start updating the stats of the gameView
     char *playTracker;
+    int j;
     for (playTracker = pastPlays;
          playTracker != pastPlays + 8 * gameView->turnNum;
          pastPlays += 8) {
@@ -108,43 +109,41 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
         }
 
         // set location and adjust trail...
-        for (i = 0, i < TRAIL_SIZE - 1, i++) {
-            gameView->players[p].trail[i] = gameView->players[p].trail[i+1];
+        for (j = 0; j < TRAIL_SIZE - 1; j++) {
+            gameView->players[p].trail[j] = gameView->players[p].trail[j+1];
         }
         gameView->players[p].trail[TRAIL_SIZE - 1] =
-            abbrevToID(playTracker[1],playTracker[2]);
+            abbrevToID(playTracker);
         gameView->players[p].location =
-            abbrevToID(playTracker[1],playTracker[2]);
+            abbrevToID(playTracker);
 
         if (p == PLAYER_DRACULA) { // it's dracula!
             // set location for dracula properly...
             if (gameView->players[p].location >= DOUBLE_BACK_1 &&
                        gameView->players[p].location <= TELEPORT) {
-                switch (gameView->players[p].location) {
-                    case 'DOUBLE_BACK_1':
-                        gameView->players[p].location =
-                            gameView->players[p].trail[4];
-                        break;
-                    case 'DOUBLE_BACK_2':
-                        gameView->players[p].location =
-                            gameView->players[p].trail[3];
-                        break;
-                    case 'DOUBLE_BACK_3':
-                        gameView->players[p].location =
-                            gameView->players[p].trail[2];
-                        break;
-                    case 'DOUBLE_BACK_4':
-                        gameView->players[p].location =
-                            gameView->players[p].trail[1];
-                        break;
-                    case 'DOUBLE_BACK_5':
-                        gameView->players[p].location =
-                            gameView->players[p].trail[0];
-                        break;
-                    case 'TELEPORT':
-                        gameView->players[p].location =
-                            CASTLE_DRACULA;
-                        break;
+                if (gameView->players[p].location == DOUBLE_BACK_1) {
+                    gameView->players[p].location =
+                        gameView->players[p].trail[4];
+                } else if (gameView->players[p].location ==
+                           DOUBLE_BACK_2) {
+                    gameView->players[p].location =
+                        gameView->players[p].trail[3];
+                } else if (gameView->players[p].location ==
+                           DOUBLE_BACK_3) {
+                    gameView->players[p].location =
+                        gameView->players[p].trail[2];
+                } else if (gameView->players[p].location ==
+                           DOUBLE_BACK_4) {
+                    gameView->players[p].location =
+                        gameView->players[p].trail[1];
+                } else if (gameView->players[p].location ==
+                           DOUBLE_BACK_5) {
+                    gameView->players[p].location =
+                        gameView->players[p].trail[1];
+                } else if (gameView->players[p].location ==
+                           TELEPORT) {
+                    gameView->players[p].location =
+                        CASTLE_DRACULA;
                 }
                 gameView->players[p].trail[5] =
                     gameView->players[p].location;
@@ -153,14 +152,14 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
             // deduct 2 hp if dracula is at sea...
             // add 10 hp if dracula is at CASTLE_DRACULA and not dead...
             if (isSea(gameView->players[p].location) == TRUE) {
-                gameView->playerID[p].health -= 2;
+                gameView->players[p].hp -= 2;
             } else if (gameView->players[p].location == CASTLE_DRACULA &&
                        gameView->players[p].hp > 0) {
                 gameView->players[p].hp += 10;
             }
 
             // deduce 1 point from the game score...
-            if (gameView->players[p] > 0) {
+            if (gameView->players[p].hp > 0) {
                 gameView->score -= 1;
             }
         } else { // it's a hunter!
@@ -184,8 +183,8 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
             }
 
             // resting in a city...
-            if ((strcmp(gameView->players.trail[TRAIL_SIZE - 1],
-                        gameView->players.trail[TRAIL_SIZE - 2]) == 0) &&
+            if ((gameView->players[p].trail[TRAIL_SIZE - 1] ==
+                gameView->players[p].trail[TRAIL_SIZE - 2]) &&
                 gameView->players[p].hp > 0) {
                 gameView->players[p].hp += 3;
                 if (gameView->players[p].hp > 9) {
@@ -195,18 +194,19 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
 
             // automagical hospital teleport...
             if (gameView->players[p].hp <= 0) {
-                gameView->playerID[current].hp = 9;
-                for (i = 0, i < TRAIL_SIZE - 1, i++) {
-                    gameView->players[p].trail[i] =
-                        gameView->players[p].trail[i+1];
+                gameView->players[p].hp = 9;
+                for (j = 0; j < TRAIL_SIZE - 1; j++) {
+                    gameView->players[p].trail[j] =
+                        gameView->players[p].trail[j+1];
                 }
                 gameView->players[p].trail[TRAIL_SIZE - 1] =
                     ST_JOSEPH_AND_ST_MARYS;
                 gameView->players[p].location =
                     ST_JOSEPH_AND_ST_MARYS;
-        	    gameView->gameScore -= 6;
+        	    gameView->score -= 6;
     	    }
-
+        }
+    }
     return gameView;
 }
 
@@ -255,7 +255,7 @@ int getHealth(GameView currentView, PlayerID player) {
         assert(currentView->players[player].hp > 0);
     } else {
         assert(currentView->players[player].hp >= 0 &&
-               currentView->players[player].hp <= 9)
+               currentView->players[player].hp <= 9);
     }
     return currentView->players[player].hp;
 }
@@ -270,12 +270,9 @@ LocationID getLocation(GameView currentView, PlayerID player) {
         assert(currentView->players[player].location >= 0 &&
                currentView->players[player].location <= 70);
     } else {
-        assert(currentView->players[player].location == CITY_UNKNOWN  ||
-               currentView->players[player].location == SEA_UNKNOWN   ||
-               currentView->players[player].location == HIDE          ||
-               currentView->players[player].location == DOUBLE_BACK_N ||
-               currentView->players[player].location == TELEPORT      ||
-               currentView->players[player].location == LOCATION_UNKNOWN);
+        assert((currentView->players[player].location >= CITY_UNKNOWN &&
+               currentView->players[player].location <= TELEPORT)     ||
+               currentView->players[player].location == NOWHERE);
     }
     return currentView->players[player].location;
 }
@@ -297,47 +294,16 @@ void getHistory(GameView currentView, PlayerID player,
 //// Functions that query the map to find information about connectivity
 
 // Returns an array of LocationIDs for all directly connected locations
-//////////////////////////////////// THIS NEEDS TO BE CHANGED
-// TODO
 LocationID *connectedLocations(GameView currentView, int *numLocations,
                                LocationID from, PlayerID player,
                                Round round, int road, int rail,
                                int sea) {
-   // Make sure the passed in data isn't BS
-   assert(currentView != NULL);
-   assert(start >= MIN_MAP_LOCATION && start <= MAX_MAP_LOCATION);
-   assert(end >= MIN_MAP_LOCATION && end <= MAX_MAP_LOCATION);
-   // Initial setup of the values to be counted
-   int num = 0;
-   int arrayC = 0;
-   VList currPrim = g->connections[start];
-
-   while (currPrim != NULL) { // Iterate through the 'start' list
-       if (currPrim->v == end) { // Found 'end'? End here
-           type[arrayC] = currPrim->type;
-           num++;
-           arrayC++;
-           break;
-       } else if (isSea(currPrim->v) == TRUE && // 'Start' and 'end'
-                   isLand(start) == TRUE &&     // both 'land', and
-                   isLand(end) == TRUE) {       // found a 'sea'
-           VList currSec = g->connections[currPrim->v];
-           while (currSec != NULL) { // Iterate through 'sea' list
-               if (currSec->v == end) { // Found 'end'? End here
-                   type[arrayC] = currSec->type;
-                   num++;
-                   arrayC++;
-                   break;
-               }
-               currSec = currSec->next;
-           }
-       }
-       currPrim = currPrim->next;
-   }
-   return num;
+   // TODO
+   LocationID *connected = malloc(20);
+   return connected;
 }
 
-static LocationID abbrevToID (char x, char y) {
+/*static LocationID abbrevToID (char x, char y) {
 
     // create array of locations
     char *abbrev[NUM_LOCATIONS] =
@@ -396,4 +362,4 @@ static LocationID abbrevToID (char x, char y) {
     free(playerLocation);
 
     return ID;
-}
+}*/
