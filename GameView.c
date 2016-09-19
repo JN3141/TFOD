@@ -9,6 +9,8 @@
 #include "GameView.h"
 #include "encounter.h"
 #include "Map.h" //... if you decide to use the Map ADT
+#include "Places.h"
+#include "Map.c"
 
 typedef struct _player {
     int hp;                         // HP of the the player
@@ -407,12 +409,12 @@ LocationID *connectedLocations(GameView currentView, int *numLocations,
                                Round round, int road, int rail,
                                int sea) {
                     
-   // Make sure the passed in data isn't BS
+// Make sure the passed in data isn't BS
    assert(currentView != NULL);
-   assert(from >= MIN_MAP_LOCATION && start <= MAX_MAP_LOCATION);
+   assert(from >= MIN_MAP_LOCATION);
 
    // Initial setup of the values to be counted
-   LocationID *locationArray = malloc(NUM_LOCATIONS * sizeof(LocationIDS));
+   LocationID *locationArray = malloc(NUM_MAP_LOCATIONS * sizeof(LocationID));
    int num = 0;
    int skipLoop = 0;
    Map g = newMap();
@@ -420,34 +422,32 @@ LocationID *connectedLocations(GameView currentView, int *numLocations,
 
    while(currPrim != NULL){
    	//refreshing the skip
-   	skipLoop = FALSE;
+       	skipLoop = FALSE;
 
-   	//dracula can't be at the hospital!
-   	if(currPrim->v == ST_JOSEPH_AND_ST_MARYS && player == DRACULA){
-   		skipLoop = TRUE;
-   	}
+       	//dracula can't be at the hospital!
+       	if(currPrim->v == ST_JOSEPH_AND_ST_MARYS && player == PLAYER_DRACULA){
+       		skipLoop = TRUE;
+       	}
 
-   	if(skip == FALSE){
-   		//dracula can't go on rail
-   		//"sum mod 4 is 0: No train move is permitted for the Hunter this turn."
-   		if(player != DRACULA && rail == TRUE && currPrim->type = rail
-   			&& ((round + currentView->score)%4 != 0){
-   			locationArray[num] = currPrim->v;
-   			num++;
-   		} else if (road == TRUE && currPrim->type = road){
-   			locationArray[num] = currPrim->v;
-   			num++;
-   		} else if (boat == TRUE && currPrim->type == boat){
-   			locationArray[num] = currPrim->v;
-   			num++;
-   		}
-   	}
-   }
+       	if(skipLoop == FALSE){
+       		//dracula can't go on rail
+       		//"sum mod 4 is 0: No train move is permitted for the Hunter this turn."
+       		if(player != PLAYER_DRACULA && rail && currPrim->type == rail
+       			&& ((round + currentView->score)%4 != 0)){
+       			locationArray[num] = currPrim->v;
+       			num++;
+       		} else if (road && currPrim->type == road){
+       			locationArray[num] = currPrim->v;
+       			num++;
+       		} else if (sea && currPrim->type == sea){
+       			locationArray[num] = currPrim->v;
+       			num++;
+       		}
+       }
+    }
 
-   *numLocations = num;
 
-   return num;
-}
+   return locationArray;
 }
 
 Encounters getEncounters(GameView currentView) {
