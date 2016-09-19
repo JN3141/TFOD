@@ -13,7 +13,6 @@ typedef struct edge{
 
 // graph representation is hidden 
 typedef struct MapRep *Map; 
-typedef struct vNode *VList;
 
 // operations on graphs 
 Map  newMap();  
