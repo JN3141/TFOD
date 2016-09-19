@@ -26,16 +26,17 @@ typedef struct _encounters {
 typedef struct vNode *VList;
 
 struct vNode {
-  LocationID  v;    // ALICANTE, etc                                                                                                                                                 
-  TransportID type; // ROAD, RAIL, BOAT                                                                                                                                              
-  VList       next; // link to next node                                                                                                                                             
+  LocationID  v;    // ALICANTE, etc
+  TransportID type; // ROAD, RAIL, BOAT
+  VList       next; // link to next node
 };
 
 struct MapRep {
-  int   nV;         //#vertices                                                                                                                                                     
-  int   nE;         // #edges                                                                                                                                                        
-  VList connections[NUM_MAP_LOCATIONS]; // array of lists                                                                                                                            
+  int   nV;         //#vertices
+  int   nE;         // #edges
+  VList connections[NUM_MAP_LOCATIONS]; // array of lists
 };
+
 struct gameView {
     int score;                      // current game score out of 366
     int numTurns;                   // number of turns
@@ -420,7 +421,7 @@ LocationID *connectedLocations(GameView currentView, int *numLocations,
                                LocationID from, PlayerID player,
                                Round round, int road, int rail,
                                int sea) {
-                    
+
    // Make sure the passed in data isn't BS
    assert(currentView != NULL);
    assert(from >= MIN_MAP_LOCATION);
