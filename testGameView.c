@@ -10,7 +10,7 @@ int main()
 {
     int i;
     GameView gv;
-    
+
     printf("Test basic empty initialisation\n");
     PlayerMessage messages1[] = {};
     gv = newGameView("", messages1);
@@ -55,7 +55,7 @@ int main()
     getHistory(gv,PLAYER_DR_SEWARD,history);
     assert(history[0] == ATLANTIC_OCEAN);
     assert(history[1] == UNKNOWN_LOCATION);
-    printf("passed\n");        
+    printf("passed\n");
     disposeGameView(gv);
 
     printf("Test for Dracula doubling back at sea, and losing blood points (Hunter View)\n");
@@ -86,7 +86,7 @@ int main()
 
     printf("Test for connections\n");
     int size, seen[NUM_MAP_LOCATIONS], *edges;
-    gv = newGameView("", messages1);    
+    gv = newGameView("", messages1);
     printf("Checking Galatz road connections\n");
     edges = connectedLocations(gv,&size,GALATZ,PLAYER_LORD_GODALMING,0,1,0,0);
     memset(seen, 0, NUM_MAP_LOCATIONS*sizeof(int));
@@ -111,4 +111,3 @@ int main()
     disposeGameView(gv);
     return 0;
 }
-

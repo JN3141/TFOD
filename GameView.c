@@ -1,6 +1,7 @@
 // GameView.c ... GameView ADT implementation
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 #include <string.h>
 #include "Globals.h"
@@ -23,14 +24,14 @@ typedef struct _encounters {
 
 struct gameView {
     int score;                      // current game score out of 366
-    int turnNum;                    // number of turns
+    int numTurns;                    // number of turns
     PlayerID currPlayer;            // ID of current player
-    Round roundNum;                 // number of rounds
+    Round numRounds;                 // number of rounds
     player players[NUM_PLAYERS];    // array of player data structs
     encounters eTrail[TRAIL_SIZE];  // trail of active encounters (T/V)
 };
 
-// static LocationID abbrevToID (char x, char y); //////////////////////////////////
+static LocationID placeToID (char x, char y); //////////////////////////////////
 
 // Creates a new GameView to summarise the current state of the game
 GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
@@ -43,20 +44,9 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
     // count the number of turns and rounds
     // turns...
 
-    gameView->turnNum = 0;
-    gameView->roundNum = 0;
+    gameView->numTurns = 0;
+    gameView->numRounds = 0;
 
-    if (pastPlays[0] == 'G') {
-        int i;
-        for (i = 1; pastPlays[i-1] != '\0'; i++) { ///////////////// not sure if null-terminated string
-            if (i % 8 == 0) {
-                gameView->turnNum++;
-                if (gameView->turnNum % NUM_PLAYERS == 0) {
-                    gameView->roundNum++;
-                }
-            }
-        }
-    }
 
     // setting the current player
     gameView->currPlayer = PLAYER_LORD_GODALMING;
@@ -80,23 +70,25 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
     }
 
 
+
     // actually haven't taken a turn yet? just return the basis
-    if (gameView->turnNum <= 0) {
+    if (pastPlays[0] != 'G') {
         return gameView;
-    }
-
-    // so we've gone somewhat into the game? time to update
-    // set the current turn
-    gameView->currPlayer = gameView->turnNum % NUM_PLAYERS;
-
-    // increment player turns
-    for (p = PLAYER_LORD_GODALMING; p <= PLAYER_DRACULA; p++) {
-        // every player would have made at least as many turns as rounds
-        gameView->players[p].turns = gameView->roundNum;
-
-        // for every turn beyond the end of the last round
-        if (p < (gameView->turnNum % NUM_PLAYERS)) {
-            gameView->players[p].turns++;
+    } else {
+        int i;
+        for (i = 1; pastPlays[i-1] != '\0'; i++) {
+            if (i % 8 == 0) {
+                gameView->numTurns++;
+                if (gameView->numTurns % NUM_PLAYERS == 0) {
+                    gameView->numRounds++;
+                }
+            }
+        }
+        if (i % 8 == 0) {
+            gameView->numTurns++;
+            if (gameView->numTurns % NUM_PLAYERS == 0) {
+                gameView->numRounds++;
+            }
         }
     }
 
@@ -104,8 +96,9 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
     char *playTracker;
     int j;
     for (playTracker = pastPlays;
-         playTracker != pastPlays + 8 * gameView->turnNum;
-         pastPlays += 8) {
+         /*playTracker[8] != '\0';*/
+         playTracker != pastPlays + 8 * gameView->numTurns;
+         playTracker += 8) {
         p = 0;
         switch (playTracker[0]) {
             case 'G': p = PLAYER_LORD_GODALMING; break;
@@ -114,42 +107,40 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
             case 'M': p = PLAYER_MINA_HARKER; break;
             case 'D': p = PLAYER_DRACULA; break;
         }
+        gameView->players[p].turns++;
 
         // set location and adjust trail...
         // newest at the front, oldest at the end...
         for (j = TRAIL_SIZE - 1; j > 0; j--) {
             gameView->players[p].trail[j] = gameView->players[p].trail[j-1];
         }
-        gameView->players[p].trail[0] = abbrevToID(&playTracker[1]);
-        gameView->players[p].location = abbrevToID(&playTracker[1]);
+        gameView->players[p].trail[0] =
+            placeToID(playTracker[1],playTracker[2]);
+        gameView->players[p].location =
+            placeToID(playTracker[1],playTracker[2]);
 
         if (p == PLAYER_DRACULA) { // it's dracula!
+            LocationID temp = UNKNOWN_LOCATION;
             // set location for dracula properly if needed...
             if (gameView->players[p].location >= DOUBLE_BACK_1 &&
                        gameView->players[p].location <= TELEPORT) {
                 if (gameView->players[p].location == DOUBLE_BACK_1) {
-                    gameView->players[p].location =
-                        gameView->players[p].trail[1];
+                    temp = gameView->players[p].trail[1];
                 } else if (gameView->players[p].location ==
                            DOUBLE_BACK_2) {
-                    gameView->players[p].location =
-                        gameView->players[p].trail[2];
+                    temp = gameView->players[p].trail[2];
                 } else if (gameView->players[p].location ==
                            DOUBLE_BACK_3) {
-                    gameView->players[p].location =
-                        gameView->players[p].trail[3];
+                    temp = gameView->players[p].trail[3];
                 } else if (gameView->players[p].location ==
                            DOUBLE_BACK_4) {
-                    gameView->players[p].location =
-                        gameView->players[p].trail[4];
+                    temp = gameView->players[p].trail[4];
                 } else if (gameView->players[p].location ==
                            DOUBLE_BACK_5) {
-                    gameView->players[p].location =
-                        gameView->players[p].trail[5];
+                    temp = gameView->players[p].trail[5];
                 } else if (gameView->players[p].location ==
                            TELEPORT) {
-                    gameView->players[p].location =
-                        CASTLE_DRACULA;
+                    temp = CASTLE_DRACULA;
                 }
                 gameView->players[p].trail[0] =
                     gameView->players[p].location;
@@ -157,7 +148,12 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
 
             // deduct 2 hp if dracula is at sea...
             // add 10 hp if dracula is at CASTLE_DRACULA and not dead...
-            if (isSea(gameView->players[p].location) == TRUE) {
+            if (((validPlace(gameView->players[p].location) == TRUE &&
+                isSea(gameView->players[p].location) == TRUE)       ||
+                gameView->players[p].location == SEA_UNKNOWN)       ||
+                ((validPlace(temp) == TRUE                          &&
+                  isSea(temp) == TRUE)                              ||
+                  temp == SEA_UNKNOWN)) {
                 gameView->players[p].hp -= 2;
             } else if (gameView->players[p].location == CASTLE_DRACULA &&
                        gameView->players[p].hp > 0) {
@@ -183,7 +179,7 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
 
                 // add the new encounter...
                 gameView->eTrail[0].location =
-                    abbrevToID(&playTracker[1]);
+                    placeToID(playTracker[1],playTracker[2]);
                 gameView->eTrail[0].type = 'T';
 
             } else if (playTracker[4] == 'V') {
@@ -200,7 +196,7 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
 
                 // add the new encounter...
                 gameView->eTrail[0].location =
-                    abbrevToID(&playTracker[1]);
+                    placeToID(playTracker[1],playTracker[2]);
                 gameView->eTrail[0].type = 'V';
 
             }
@@ -215,7 +211,7 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
             if (playTracker[3] == 'V') {
                 for (j = 0; j < TRAIL_SIZE - 1; j++) {
                     if (gameView->eTrail[j].location ==
-                        abbrevToID(&playTracker[1]) &&
+                        placeToID(playTracker[1],playTracker[2]) &&
                         gameView->eTrail[j].type == 'T') {
                         break;
                     }
@@ -232,7 +228,7 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 // remove from eTrail[]...
                 for (j = 0; j < TRAIL_SIZE - 1; j++) {
                     if (gameView->eTrail[j].location ==
-                        abbrevToID(&playTracker[1]) &&
+                        placeToID(playTracker[1],playTracker[2]) &&
                         gameView->eTrail[j].type == 'T') {
                         break;
                     }
@@ -247,7 +243,7 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 // remove from eTrail[]...
                 for (j = 0; j < TRAIL_SIZE - 1; j++) {
                     if (gameView->eTrail[j].location ==
-                        abbrevToID(&playTracker[1]) &&
+                        placeToID(playTracker[1],playTracker[2]) &&
                         gameView->eTrail[j].type == 'T') {
                         break;
                     }
@@ -262,7 +258,7 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 // remove from eTrail[]...
                 for (j = 0; j < TRAIL_SIZE - 1; j++) {
                     if (gameView->eTrail[j].location ==
-                        abbrevToID(&playTracker[1]) &&
+                        placeToID(playTracker[1],playTracker[2]) &&
                         gameView->eTrail[j].type == 'T') {
                         break;
                     }
@@ -277,7 +273,7 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 // remove from eTrail[]...
                 for (j = 0; j < TRAIL_SIZE - 1; j++) {
                     if (gameView->eTrail[j].location ==
-                        abbrevToID(&playTracker[1]) &&
+                        placeToID(playTracker[1],playTracker[2]) &&
                         gameView->eTrail[j].type == 'T') {
                         break;
                     }
@@ -336,7 +332,7 @@ void disposeGameView(GameView toBeDeleted) {
 // Get the current round
 Round getRound(GameView currentView) {
     assert(currentView != NULL);
-    return currentView->roundNum;
+    return currentView->numRounds;
 }
 
 // Get the id of current player - ie whose turn is it?
@@ -375,7 +371,8 @@ int getHealth(GameView currentView, PlayerID player) {
 // Get the current location id of a given player
 LocationID getLocation(GameView currentView, PlayerID player) {
     assert(currentView != NULL);
-    if (currentView->players[player].location == UNKNOWN_LOCATION) {
+    /*if (currentView->players[player].location == UNKNOWN_LOCATION &&
+        player >= PLAYER_LORD_GODALMING && player <= PLAYER_MINA_HARKER) {
         assert(getRound(currentView) == 0);
     } else if (player >= PLAYER_LORD_GODALMING &&
                player <= PLAYER_MINA_HARKER) {
@@ -385,7 +382,7 @@ LocationID getLocation(GameView currentView, PlayerID player) {
         assert((currentView->players[player].location >= CITY_UNKNOWN &&
                currentView->players[player].location <= TELEPORT)     ||
                currentView->players[player].location == NOWHERE);
-    }
+    }*/
     return currentView->players[player].location;
 }
 
@@ -398,7 +395,6 @@ void getHistory(GameView currentView, PlayerID player,
     int i;
     for (i = 0; i < TRAIL_SIZE; i++) {
         trail[i] = currentView->players[player].trail[i];
-        i++;
     }
     return;
 }
@@ -421,12 +417,15 @@ Encounters getEncounters(GameView currentView) {
 
 void getEncountersData(GameView currentView, LocationID where,
                          int *numTraps, int *numVamps) {
+    *numTraps = 0;
+    *numVamps = 0;
     int j;
     for (j = 0; j < TRAIL_SIZE - 1; j++) {
         if (currentView->eTrail[j].location == where) {
             if (currentView->eTrail[j].type == 'T') {
                 (*numTraps)++;
-            } else if (currentView->eTrail[j].type == 'V') {
+            }
+            if (currentView->eTrail[j].type == 'V') {
                 (*numVamps)++;
             }
         }
@@ -434,17 +433,7 @@ void getEncountersData(GameView currentView, LocationID where,
     return;
 }
 
-/*static LocationID abbrevToID (char x, char y) {
-
-    // create array of locations
-    char *abbrev[NUM_LOCATIONS] =
-    {"AS", "AL", "AM", "AT", "AO", "BA", "BI", "BB", "BE", "BR", "BS",
-     "BO", "BU", "BC", "BD", "CA", "CG", "CD", "CF", "CO", "CN", "DU",
-     "ED", "EC", "FL", "FR", "GA", "GW", "GE", "GO", "GR", "HA", "IO",
-     "IR", "KL", "LE", "LI", "LS", "LV", "LO", "MA", "MN", "MR", "MS",
-     "MI", "MU", "NA", "NP", "NS", "NU", "PA", "PL", "PR", "RO", "SA",
-     "SN", "SR", "SJ", "SO", "JM", "ST", "SW", "SZ", "TO", "TS", "VA",
-     "VR", "VE", "VI", "ZA", "ZU"};
+static LocationID placeToID (char x, char y) {
 
     // put the characters x and y into a null-terminated string
     char *playerLocation = malloc(sizeof(char)*3);
@@ -457,7 +446,7 @@ void getEncountersData(GameView currentView, LocationID where,
     if (strcmp(playerLocation, "C?") == 0) {
         ID = CITY_UNKNOWN;
     } else if (strcmp(playerLocation, "S?") == 0) {
-        ID = SEA_UNKNOWN
+        ID = SEA_UNKNOWN;
     } else if (strcmp(playerLocation, "HI") == 0) {
         ID = HIDE;
     } else if (strcmp(playerLocation, "D1") == 0) {
@@ -477,20 +466,11 @@ void getEncountersData(GameView currentView, LocationID where,
     }
 
     // find the ID from abbrevs[]
-    int start = MIN_MAP_LOCATION;
-    int end = MAX_MAP_LOCATION;
-    while (strcmp(abbrev[start],abbrev[end]) <= 0) {
-        mid = (start + end)/2;
-        if (strcmp(name,abbrev[mid]) < 0) {
-            end = mid - 1;
-        } else if (strcmp(name,abbrev[mid]) > 0) {
-            start = mid + 1;
-        } else {
-            ID = abbrev[mid];
-        }
+    if (ID == UNKNOWN_LOCATION) {
+        ID = abbrevToID(playerLocation);
     }
 
     free(playerLocation);
 
     return ID;
-}*/
+}

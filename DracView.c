@@ -52,11 +52,13 @@ int giveMeTheScore(DracView currentView) {
 
 // Get the current health points for a given player
 int howHealthyIs(DracView currentView, PlayerID player) {
+    assert(player >= PLAYER_LORD_GODALMING && player <= PLAYER_DRACULA);
     return getHealth(currentView->gV, player);
 }
 
 // Get the current location id of a given player
 LocationID whereIs(DracView currentView, PlayerID player) {
+    assert(player >= PLAYER_LORD_GODALMING && player <= PLAYER_DRACULA);
     return getLocation(currentView->gV, player);
 }
 
