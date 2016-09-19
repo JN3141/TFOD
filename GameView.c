@@ -406,46 +406,48 @@ LocationID *connectedLocations(GameView currentView, int *numLocations,
                                LocationID from, PlayerID player,
                                Round round, int road, int rail,
                                int sea) {
-    // Make sure the passed in data isn't BS
-    assert(currentView != NULL);
-    assert(start >= MIN_MAP_LOCATION && start <= MAX_MAP_LOCATION);
-    assert(end >= MIN_MAP_LOCATION && end <= MAX_MAP_LOCATION);
+                    
+   // Make sure the passed in data isn't BS
+   assert(currentView != NULL);
+   assert(from >= MIN_MAP_LOCATION && start <= MAX_MAP_LOCATION);
 
-    // Create the map of Europe...
-    Map europe = newMap();
+   // Initial setup of the values to be counted
+   LocationID *locationArray = malloc(NUM_LOCATIONS * sizeof(LocationIDS));
+   int num = 0;
+   int skipLoop = 0;
+   Map g = newMap();
+   VList currPrim = g->connections[from];
 
-    // empty out numLocations...
-    *numLocations = 0;
+   while(currPrim != NULL){
+   	//refreshing the skip
+   	skipLoop = FALSE;
 
-    int num = 0;
-    int arrayC = 0;
-    VList currPrim = g->connections[start];
+   	//dracula can't be at the hospital!
+   	if(currPrim->v == ST_JOSEPH_AND_ST_MARYS && player == DRACULA){
+   		skipLoop = TRUE;
+   	}
 
-    while (currPrim != NULL) { // Iterate through the 'start' list
-        if (currPrim->v == end) { // Found 'end'? End here
-            type[arrayC] = currPrim->type;
-            num++;
-            arrayC++;
-            break;
-        } else if (isSea(currPrim->v) == TRUE && // 'Start' and 'end'
-                    isLand(start) == TRUE &&     // both 'land', and
-                    isLand(end) == TRUE) {       // found a 'sea'
-            VList currSec = g->connections[currPrim->v];
-            while (currSec != NULL) { // Iterate through 'sea' list
-                if (currSec->v == end) { // Found 'end'? End here
-                    type[arrayC] = currSec->type;
-                    num++;
-                    arrayC++;
-                    break;
-                }
-                currSec = currSec->next;
-            }
-        }
-        currPrim = currPrim->next;
-    }
-    return num;
-   LocationID *connected = malloc(20);
-   return connected;
+   	if(skip == FALSE){
+   		//dracula can't go on rail
+   		//"sum mod 4 is 0: No train move is permitted for the Hunter this turn."
+   		if(player != DRACULA && rail == TRUE && currPrim->type = rail
+   			&& ((round + currentView->score)%4 != 0){
+   			locationArray[num] = currPrim->v;
+   			num++;
+   		} else if (road == TRUE && currPrim->type = road){
+   			locationArray[num] = currPrim->v;
+   			num++;
+   		} else if (boat == TRUE && currPrim->type == boat){
+   			locationArray[num] = currPrim->v;
+   			num++;
+   		}
+   	}
+   }
+
+   *numLocations = num;
+
+   return num;
+}
 }
 
 Encounters getEncounters(GameView currentView) {
