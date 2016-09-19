@@ -10,7 +10,6 @@
 #include "encounter.h"
 #include "Map.h" //... if you decide to use the Map ADT
 #include "Places.h"
-#include "Map.c"
 
 typedef struct _player {
     int hp;                         // HP of the the player
@@ -408,7 +407,7 @@ LocationID *connectedLocations(GameView currentView, int *numLocations,
                                LocationID from, PlayerID player,
                                Round round, int road, int rail,
                                int sea) {
-                    
+
 // Make sure the passed in data isn't BS
    assert(currentView != NULL);
    assert(from >= MIN_MAP_LOCATION);
