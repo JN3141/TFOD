@@ -6,6 +6,7 @@
 #include "Globals.h"
 #include "Game.h"
 #include "GameView.h"
+#include "encounter.h"
 #include "Map.h" //... if you decide to use the Map ADT
 
 typedef struct _player {
@@ -15,12 +16,18 @@ typedef struct _player {
     LocationID location;            // contains the ID of their location
 } player;
 
+typedef struct _encounters {
+    LocationID location;
+    char type;
+} encounters;
+
 struct gameView {
     int score;                      // current game score out of 366
     int turnNum;                    // number of turns
     PlayerID currPlayer;            // ID of current player
     Round roundNum;                 // number of rounds
     player players[NUM_PLAYERS];    // array of player data structs
+    encounters eTrail[TRAIL_SIZE];  // trail of active encounters (T/V)
 };
 
 // static LocationID abbrevToID (char x, char y); //////////////////////////////////
@@ -109,14 +116,12 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
         }
 
         // set location and adjust trail...
-        // oldest at the front, newest at the end...
-        for (j = 0; j < TRAIL_SIZE - 1; j++) {
-            gameView->players[p].trail[j] = gameView->players[p].trail[j+1];
+        // newest at the front, oldest at the end...
+        for (j = TRAIL_SIZE - 1; j > 0; j--) {
+            gameView->players[p].trail[j] = gameView->players[p].trail[j-1];
         }
-        gameView->players[p].trail[TRAIL_SIZE - 1] =
-            abbrevToID(playTracker[1]);
-        gameView->players[p].location =
-            abbrevToID(playTracker[1]);
+        gameView->players[p].trail[0] = abbrevToID(&playTracker[1]);
+        gameView->players[p].location = abbrevToID(&playTracker[1]);
 
         if (p == PLAYER_DRACULA) { // it's dracula!
             // set location for dracula properly if needed...
@@ -124,29 +129,29 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                        gameView->players[p].location <= TELEPORT) {
                 if (gameView->players[p].location == DOUBLE_BACK_1) {
                     gameView->players[p].location =
-                        gameView->players[p].trail[4];
+                        gameView->players[p].trail[1];
                 } else if (gameView->players[p].location ==
                            DOUBLE_BACK_2) {
                     gameView->players[p].location =
-                        gameView->players[p].trail[3];
+                        gameView->players[p].trail[2];
                 } else if (gameView->players[p].location ==
                            DOUBLE_BACK_3) {
                     gameView->players[p].location =
-                        gameView->players[p].trail[2];
+                        gameView->players[p].trail[3];
                 } else if (gameView->players[p].location ==
                            DOUBLE_BACK_4) {
                     gameView->players[p].location =
-                        gameView->players[p].trail[1];
+                        gameView->players[p].trail[4];
                 } else if (gameView->players[p].location ==
                            DOUBLE_BACK_5) {
                     gameView->players[p].location =
-                        gameView->players[p].trail[1];
+                        gameView->players[p].trail[5];
                 } else if (gameView->players[p].location ==
                            TELEPORT) {
                     gameView->players[p].location =
                         CASTLE_DRACULA;
                 }
-                gameView->players[p].trail[5] =
+                gameView->players[p].trail[0] =
                     gameView->players[p].location;
             }
 
@@ -159,21 +164,127 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 gameView->players[p].hp += 10;
             }
 
+            // edit the eTrail[]...
+            if (gameView->eTrail[TRAIL_SIZE-1].type == 'V') {
+                gameView->score -= 13;
+            }
+
+            if (playTracker[3] == 'T') {
+                // adjust eTrail[]...
+                // newest at the front, oldest at the end...
+
+                // shift the array...
+                for (j = TRAIL_SIZE - 1; j > 0; j--) {
+                    gameView->eTrail[j].location =
+                        gameView->eTrail[j-1].location;
+                    gameView->eTrail[j].type =
+                        gameView->eTrail[j-1].type;
+                }
+
+                // add the new encounter...
+                gameView->eTrail[0].location =
+                    abbrevToID(&playTracker[1]);
+                gameView->eTrail[0].type = 'T';
+
+            } else if (playTracker[4] == 'V') {
+                // adjust eTrail[]...
+                // newest at the front, oldest at the end...
+
+                // shift the array...
+                for (j = TRAIL_SIZE - 1; j > 0; j--) {
+                    gameView->eTrail[j].location =
+                        gameView->eTrail[j-1].location;
+                    gameView->eTrail[j].type =
+                        gameView->eTrail[j-1].type;
+                }
+
+                // add the new encounter...
+                gameView->eTrail[0].location =
+                    abbrevToID(&playTracker[1]);
+                gameView->eTrail[0].type = 'V';
+
+            }
+
             // deduct 1 point from the game score...
             if (gameView->players[p].hp > 0) {
                 gameView->score -= 1;
             }
+
         } else { // it's a hunter!
+            // immature vampires...
+            if (playTracker[3] == 'V') {
+                for (j = 0; j < TRAIL_SIZE - 1; j++) {
+                    if (gameView->eTrail[j].location ==
+                        abbrevToID(&playTracker[1]) &&
+                        gameView->eTrail[j].type == 'T') {
+                        break;
+                    }
+                }
+                gameView->eTrail[j].location = NOWHERE;
+                gameView->eTrail[j].type = '.';
+            }
+
             // traps...
             if (playTracker[3] == 'T' && gameView->players[p].hp > 0) {
+                // deduct hp...
                 gameView->players[p].hp -= 2;
+
+                // remove from eTrail[]...
+                for (j = 0; j < TRAIL_SIZE - 1; j++) {
+                    if (gameView->eTrail[j].location ==
+                        abbrevToID(&playTracker[1]) &&
+                        gameView->eTrail[j].type == 'T') {
+                        break;
+                    }
+                }
+                gameView->eTrail[j].location = NOWHERE;
+                gameView->eTrail[j].type = '.';
             }
     	    if (playTracker[4] == 'T' && gameView->players[p].hp > 0) {
-    		    gameView->players[p].hp -= 2;
+                // deduct hp...
+                gameView->players[p].hp -= 2;
+
+                // remove from eTrail[]...
+                for (j = 0; j < TRAIL_SIZE - 1; j++) {
+                    if (gameView->eTrail[j].location ==
+                        abbrevToID(&playTracker[1]) &&
+                        gameView->eTrail[j].type == 'T') {
+                        break;
+                    }
+                }
+                gameView->eTrail[j].location = NOWHERE;
+                gameView->eTrail[j].type = '.';
             }
             if (playTracker[5] == 'T' && gameView->players[p].hp > 0) {
-    		    gameView->players[p].hp -= 2;
+                // deduct hp...
+                gameView->players[p].hp -= 2;
+
+                // remove from eTrail[]...
+                for (j = 0; j < TRAIL_SIZE - 1; j++) {
+                    if (gameView->eTrail[j].location ==
+                        abbrevToID(&playTracker[1]) &&
+                        gameView->eTrail[j].type == 'T') {
+                        break;
+                    }
+                }
+                gameView->eTrail[j].location = NOWHERE;
+                gameView->eTrail[j].type = '.';
     	    }
+            if (playTracker[6] == 'T' && gameView->players[p].hp > 0) {
+                // deduct hp...
+                gameView->players[p].hp -= 2;
+
+                // remove from eTrail[]...
+                for (j = 0; j < TRAIL_SIZE - 1; j++) {
+                    if (gameView->eTrail[j].location ==
+                        abbrevToID(&playTracker[1]) &&
+                        gameView->eTrail[j].type == 'T') {
+                        break;
+                    }
+                }
+                gameView->eTrail[j].location = NOWHERE;
+                gameView->eTrail[j].type = '.';
+            }
 
             // dracula encounter...
             if ((playTracker[3] == 'D' || playTracker[4] == 'D' ||
@@ -184,8 +295,8 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
             }
 
             // resting in a city...
-            if ((gameView->players[p].trail[TRAIL_SIZE - 1] ==
-                gameView->players[p].trail[TRAIL_SIZE - 2]) &&
+            if ((gameView->players[p].trail[0] ==
+                gameView->players[p].trail[1]) &&
                 gameView->players[p].hp > 0) {
                 gameView->players[p].hp += 3;
                 if (gameView->players[p].hp > 9) {
@@ -196,11 +307,11 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
             // automagical hospital teleport...
             if (gameView->players[p].hp <= 0) {
                 gameView->players[p].hp = 9;
-                for (j = 0; j < TRAIL_SIZE - 1; j++) {
+                for (j = TRAIL_SIZE-1; j > 0; j--) {
                     gameView->players[p].trail[j] =
-                        gameView->players[p].trail[j+1];
+                        gameView->players[p].trail[j-1];
                 }
-                gameView->players[p].trail[TRAIL_SIZE - 1] =
+                gameView->players[p].trail[0] =
                     ST_JOSEPH_AND_ST_MARYS;
                 gameView->players[p].location =
                     ST_JOSEPH_AND_ST_MARYS;
@@ -284,10 +395,10 @@ LocationID getLocation(GameView currentView, PlayerID player) {
 void getHistory(GameView currentView, PlayerID player,
                 LocationID trail[TRAIL_SIZE]) {
     assert(currentView != NULL);
-    int turn;
-    for (turn = 0; turn < TRAIL_SIZE; turn++) {
-        trail[turn] = currentView->players[player].trail[turn];
-        turn++;
+    int i;
+    for (i = 0; i < TRAIL_SIZE; i++) {
+        trail[i] = currentView->players[player].trail[i];
+        i++;
     }
     return;
 }
@@ -302,6 +413,25 @@ LocationID *connectedLocations(GameView currentView, int *numLocations,
    // TODO
    LocationID *connected = malloc(20);
    return connected;
+}
+
+Encounters getEncounters(GameView currentView) {
+    return (Encounters)(currentView->eTrail);
+}
+
+void getEncountersData(GameView currentView, LocationID where,
+                         int *numTraps, int *numVamps) {
+    int j;
+    for (j = 0; j < TRAIL_SIZE - 1; j++) {
+        if (currentView->eTrail[j].location == where) {
+            if (currentView->eTrail[j].type == 'T') {
+                (*numTraps)++;
+            } else if (currentView->eTrail[j].type == 'V') {
+                (*numVamps)++;
+            }
+        }
+    }
+    return;
 }
 
 /*static LocationID abbrevToID (char x, char y) {
