@@ -24,9 +24,9 @@ typedef struct _encounters {
 
 struct gameView {
     int score;                      // current game score out of 366
-    int numTurns;                    // number of turns
+    int numTurns;                   // number of turns
     PlayerID currPlayer;            // ID of current player
-    Round numRounds;                 // number of rounds
+    Round numRounds;                // number of rounds
     player players[NUM_PLAYERS];    // array of player data structs
     encounters eTrail[TRAIL_SIZE];  // trail of active encounters (T/V)
 };
@@ -406,7 +406,44 @@ LocationID *connectedLocations(GameView currentView, int *numLocations,
                                LocationID from, PlayerID player,
                                Round round, int road, int rail,
                                int sea) {
-   // TODO
+    // Make sure the passed in data isn't BS
+    assert(currentView != NULL);
+    assert(start >= MIN_MAP_LOCATION && start <= MAX_MAP_LOCATION);
+    assert(end >= MIN_MAP_LOCATION && end <= MAX_MAP_LOCATION);
+
+    // Create the map of Europe...
+    Map europe = newMap();
+
+    // empty out numLocations...
+    *numLocations = 0;
+
+    int num = 0;
+    int arrayC = 0;
+    VList currPrim = g->connections[start];
+
+    while (currPrim != NULL) { // Iterate through the 'start' list
+        if (currPrim->v == end) { // Found 'end'? End here
+            type[arrayC] = currPrim->type;
+            num++;
+            arrayC++;
+            break;
+        } else if (isSea(currPrim->v) == TRUE && // 'Start' and 'end'
+                    isLand(start) == TRUE &&     // both 'land', and
+                    isLand(end) == TRUE) {       // found a 'sea'
+            VList currSec = g->connections[currPrim->v];
+            while (currSec != NULL) { // Iterate through 'sea' list
+                if (currSec->v == end) { // Found 'end'? End here
+                    type[arrayC] = currSec->type;
+                    num++;
+                    arrayC++;
+                    break;
+                }
+                currSec = currSec->next;
+            }
+        }
+        currPrim = currPrim->next;
+    }
+    return num;
    LocationID *connected = malloc(20);
    return connected;
 }
