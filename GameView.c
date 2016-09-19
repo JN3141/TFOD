@@ -23,6 +23,19 @@ typedef struct _encounters {
     char type;
 } encounters;
 
+typedef struct vNode *VList;
+
+struct vNode {
+  LocationID  v;    // ALICANTE, etc                                                                                                                                                 
+  TransportID type; // ROAD, RAIL, BOAT                                                                                                                                              
+  VList       next; // link to next node                                                                                                                                             
+};
+
+struct MapRep {
+  int   nV;         //#vertices                                                                                                                                                     
+  int   nE;         // #edges                                                                                                                                                        
+  VList connections[NUM_MAP_LOCATIONS]; // array of lists                                                                                                                            
+};
 struct gameView {
     int score;                      // current game score out of 366
     int numTurns;                   // number of turns
