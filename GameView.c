@@ -386,6 +386,7 @@ int getHealth(GameView currentView, PlayerID player) {
 // Get the current location id of a given player
 LocationID getLocation(GameView currentView, PlayerID player) {
     assert(currentView != NULL);
+    assert(player >= PLAYER_LORD_GODALMING && player < NUM_PLAYERS);
     /*if (currentView->players[player].location == UNKNOWN_LOCATION &&
         player >= PLAYER_LORD_GODALMING && player <= PLAYER_MINA_HARKER) {
         assert(getRound(currentView) == 0);
