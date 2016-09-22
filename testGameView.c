@@ -564,12 +564,10 @@ int main()
 					 "GGE.... SGE.... HGE.... MGE.... DC?....", messages6);
 	assert(getScore(gv) == 0);
 	assert(getRound(gv) == 366);
-    printf("passed\n");
+   printf("passed\n");
+	disposeGameView(gv);
 
-	 //Testing general Game rules
-	 //Hunter encounters Dracula: - 4 lifepoins
-	 //Hunter gains starts and ends in same city: + 3 life poins
-	  //Hunter doesn' exceed 9 life points
+	
 	 printf("Testing that the life points do not exceed 9\n");
     gv = newGameView("GGE.... SGE.... HGE.... MGE.... DC?.... "
                      "GGE.... SGE.... HGF.... MGE.... DC?...."
@@ -579,6 +577,7 @@ int main()
 	assert(getHealth(gv, PLAYER_VAN_HELSING) == 9);
 	assert(getHealth(gv, PLAYER_MINA_HARKER) == 9);
 	printf("Passed\n");
+	disposeGameView(gv);
 	
 	printf("Testing What happens when hunters die\n");
    gv = newGameView("GGE.... SGE.... HGE.... MGE.... DPA.... "
@@ -592,26 +591,24 @@ int main()
    assert(getScore(gv) == GAME_START_SCORE - SCORE_LOSS_HUNTER_HOSPITAL - 3);
    assert(getLocation(gv, PLAYER_LORD_GODALMING) == ST_JOSEPH_AND_ST_MARYS);
 	printf("passed\n");
+	disposeGameView(gv);
    
 
 	
-	    printf("Testing hunter dieing - one turn later\n");
-    PlayerMessage messages9[] = {"","","","","","","","","","",
-                                 "","","","","","","","","","",
-                                 ""};
-    gv = newGameView("GKL.... SKL.... HKL.... MAO.... DGA.... "
-                     "GGAD... SKL.... HKL.... MAO.... DBC.... "
-                     "GBCD... SKL.... HKL.... MAO.... DSO.... "
-                     "GSOD... SKL.... HKL.... MAO.... DSA.... "
-                     "GZA....", messages9);
+    printf("Testing post condition hunter dying\n");
+    gv = newGameView("GGE.... SGE.... HGE.... MGE.... DPA.... "
+                    "GPAD... SGE.... HGE.... MGE.... DBU.... "
+                    "GBUD... SGE.... HGE.... MGE.... DST.... "
+                    "GSTD... SGE.... HGE.... MGE.... DCO.... "
+                    "GFR....", messages5);
     assert(getHealth(gv, PLAYER_DRACULA) ==
             GAME_START_BLOOD_POINTS - 3 * LIFE_LOSS_HUNTER_ENCOUNTER);
     assert(getHealth(gv, PLAYER_LORD_GODALMING) == GAME_START_HUNTER_LIFE_POINTS);
     assert(getScore(gv) == GAME_START_SCORE - SCORE_LOSS_HUNTER_HOSPITAL - 4);
-    assert(getLocation(gv, PLAYER_LORD_GODALMING) == ZAGREB);
+    assert(getLocation(gv, PLAYER_LORD_GODALMING) == FRANKFURT);
     printf("passed\n");
     disposeGameView(gv);
-    printf("\n");
+
 	 
 	 //LOCATION
 	 //Hunter life points is 0: location is st joseph/ mary
@@ -632,7 +629,7 @@ int main()
 	 
 
 
-	disposeGameView(gv);
+
 
     return 0;
 }
