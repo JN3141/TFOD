@@ -595,6 +595,23 @@ int main()
    
 
 	
+	    printf("Testing hunter dieing - one turn later\n");
+    PlayerMessage messages9[] = {"","","","","","","","","","",
+                                 "","","","","","","","","","",
+                                 ""};
+    gv = newGameView("GKL.... SKL.... HKL.... MAO.... DGA.... "
+                     "GGAD... SKL.... HKL.... MAO.... DBC.... "
+                     "GBCD... SKL.... HKL.... MAO.... DSO.... "
+                     "GSOD... SKL.... HKL.... MAO.... DSA.... "
+                     "GZA....", messages9);
+    assert(getHealth(gv, PLAYER_DRACULA) ==
+            GAME_START_BLOOD_POINTS - 3 * LIFE_LOSS_HUNTER_ENCOUNTER);
+    assert(getHealth(gv, PLAYER_LORD_GODALMING) == GAME_START_HUNTER_LIFE_POINTS);
+    assert(getScore(gv) == GAME_START_SCORE - SCORE_LOSS_HUNTER_HOSPITAL - 4);
+    assert(getLocation(gv, PLAYER_LORD_GODALMING) == ZAGREB);
+    printf("passed\n");
+    disposeGameView(gv);
+    printf("\n");
 	 
 	 //LOCATION
 	 //Hunter life points is 0: location is st joseph/ mary

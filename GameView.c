@@ -344,8 +344,8 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 gameView->players[p].location =
                     ST_JOSEPH_AND_ST_MARYS;
         	    gameView->score -= 6;
-				 //minor : their health only changes in the next turn
-				}else if (gameView->players[p].hp == 0 && (gameView->players[p].location ==
+				 //minor : their health only changes in the next turn- checks whether health is 0, and they've already been teleported
+				}else if (gameView->players[p].hp == 0 && (gameView->players[p].trail[2] ==
                     ST_JOSEPH_AND_ST_MARYS))  {
 					gameView->players[p].hp = 9;
 				}
