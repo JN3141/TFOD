@@ -620,9 +620,9 @@ int main()
                     "GST.... SAO.... HZU.... MBB.... DBAT... "
                     "GST.... SAO.... HZU.... MBB.... DSRT... "
                     "GST.... SAO.... HZU.... MBB.... DCDT..."
-					  	 "GST.... SAO.... HZU.... MBB.... DHI..V.", messages5);
+					  	  "GST.... SAO.... HZU.... MBB.... DHI..V.", messages5);
 	
-    //assert(getScore(gv) == GAME_START_SCORE - 6 - SCORE_LOSS_VAMPIRE_MATURES);
+    assert(getScore(gv) == GAME_START_SCORE - 6 - SCORE_LOSS_VAMPIRE_MATURES);
 	 printf("Score %d \n", getScore(gv));
     printf("passed\n");
     disposeGameView(gv);

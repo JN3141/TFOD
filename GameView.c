@@ -191,11 +191,7 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 gameView->players[p].hp += 10;
             }
 
-            // MATURED Vampire
-            if (gameView->eTrail[TRAIL_SIZE-1].type == 'V') {
-                gameView->score -= 13;
-            }
-
+            
             if (playTracker[3] == 'T') {
                 // adjust eTrail[]...
                 // newest at the front, oldest at the end...
@@ -214,6 +210,7 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 gameView->eTrail[0].type = 'T';
 
             } else if (playTracker[4] == 'V') {
+						
                 // adjust eTrail[]...
                 // newest at the front, oldest at the end...
 
@@ -229,12 +226,22 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 gameView->eTrail[0].location =
                     placeToID(playTracker[1],playTracker[2]);
                 gameView->eTrail[0].type = 'V';
+					 
 
             }
 
             // deduct 1 point from the game score...
             if (gameView->players[p].hp > 0) {
                 gameView->score -= 1;
+            }
+				
+				// MATURED Vampire this isn't working properly
+				//etrail doesnt work here
+				//printf(" trail type %c\n",gameView->eTrail[TRAIL_SIZE-1].type);
+            if (gameView->eTrail[TRAIL_SIZE-1].type == 'V') {
+                gameView->score = gameView->score-13;
+					 
+					 
             }
 
         } else { // it's a hunter!
