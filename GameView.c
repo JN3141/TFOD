@@ -190,6 +190,11 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 gameView->players[p].hp += 10;
             }
 
+            // vampire matured...
+            // check eTrail for an immature vampire about to fall off...
+            if (gameView->eTrail[TRAIL_SIZE-1].type == 'V') {
+                gameView->score -= 13;
+            }
 
             if (playTracker[3] == 'T') {
                 // adjust eTrail[]...
@@ -234,12 +239,7 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 gameView->score -= 1;
             }
 
-				// MATURED Vampire this isn't working properly
-				//etrail doesnt work here
-				//printf(" trail type %c\n",gameView->eTrail[TRAIL_SIZE-1].type);
-            if (gameView->eTrail[TRAIL_SIZE-1].type == 'V') {
-                gameView->score = gameView->score-13;
-            }
+
 
         } else { // it's a hunter!
             // they were staying at the hospital the previous turn!

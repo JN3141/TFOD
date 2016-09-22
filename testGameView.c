@@ -614,39 +614,32 @@ int main()
 	//Dracula vampire matures after 6 rounds: -13 points
 	printf("Testing the score decreases for mature vampire\n");
 
-   gv = newGameView("GST.... SAO.... HZU.... MBB.... DCF.V.. "
-                    "GST.... SAO.... HZU.... MBB.... DBOT... "
-                    "GST.... SAO.... HZU.... MBB.... DTOT... "
-                    "GST.... SAO.... HZU.... MBB.... DBAT... "
-                    "GST.... SAO.... HZU.... MBB.... DSRT... "
-                    "GST.... SAO.... HZU.... MBB.... DCDT..."
-					"GST.... SAO.... HZU.... MBB.... DHI..V.", messages5);
+    gv = newGameView("GST.... SAO.... HZU.... MBB.... DCF.V.. "
+                     "GST.... SAO.... HZU.... MBB.... DBOT... "
+                     "GST.... SAO.... HZU.... MBB.... DTOT... "
+                     "GST.... SAO.... HZU.... MBB.... DBAT... "
+                     "GST.... SAO.... HZU.... MBB.... DSRT... "
+                     "GST.... SAO.... HZU.... MBB.... DCDT... "
+				 	 "GST.... SAO.... HZU.... MBB.... DHI.V.. ", messages5);
 
-    assert(getScore(gv) == GAME_START_SCORE - 6 - SCORE_LOSS_VAMPIRE_MATURES);
-	printf("Score %d \n", getScore(gv));
+    //printf("Score %d \n", getScore(gv));
+    assert(getScore(gv) == GAME_START_SCORE - 7 - SCORE_LOSS_VAMPIRE_MATURES);
     printf("passed\n");
     disposeGameView(gv);
     printf("\n");
 
-	 //LOCATION
-	 //Hunter life points is 0: location is st joseph/ mary
-	 //Check hunter life points
+    //LOCATION
+    //Hunter life points is 0: location is st joseph/ mary
+    //Check hunter life points
 
-	 //DRACULA
-	 //Dracula starts with 40 blood points
-	 //Dracula encounters hunter: - 10 blood points
-	 //Dracula is at sea at end of turn: -2 points
-	 //Dracula is ends turn in Castle Dracula: +10 points
-	 //Dracula has no blood points: game is over Score= final score
+    //DRACULA
+    //Dracula starts with 40 blood points
+    //Dracula encounters hunter: - 10 blood points
+    //Dracula is at sea at end of turn: -2 points
+    //Dracula is ends turn in Castle Dracula: +10 points
+    //Dracula has no blood points: game is over Score= final score
 
-
-
-	 //No health lost while both are at sea/ trail stuffs
-
-
-
-
-
+    //No health lost while both are at sea/ trail stuffs
 
     return 0;
 }
