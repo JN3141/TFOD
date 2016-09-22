@@ -87,6 +87,7 @@ int main()
     printf("Test for connections\n");
     int size, seen[NUM_MAP_LOCATIONS], *edges;
     gv = newGameView("", messages1);
+	 
     printf("Checking Galatz road connections\n");
     edges = connectedLocations(gv,&size,GALATZ,PLAYER_LORD_GODALMING,0,1,0,0);
     memset(seen, 0, NUM_MAP_LOCATIONS*sizeof(int));
@@ -94,6 +95,7 @@ int main()
     assert(size == 5); assert(seen[GALATZ]); assert(seen[CONSTANTA]);
     assert(seen[BUCHAREST]); assert(seen[KLAUSENBURG]); assert(seen[CASTLE_DRACULA]);
     free(edges);
+	 
     printf("Checking Ionian Sea sea connections\n");
     edges = connectedLocations(gv,&size,IONIAN_SEA,PLAYER_LORD_GODALMING,0,0,0,1);
     memset(seen, 0, NUM_MAP_LOCATIONS*sizeof(int));
@@ -102,6 +104,7 @@ int main()
     assert(seen[ADRIATIC_SEA]); assert(seen[TYRRHENIAN_SEA]);
     assert(seen[ATHENS]); assert(seen[VALONA]); assert(seen[SALONICA]);
     free(edges);
+	 
     printf("Checking Athens rail connections (none)\n");
     edges = connectedLocations(gv,&size,ATHENS,PLAYER_LORD_GODALMING,0,0,1,0);
     assert(size == 1);
@@ -561,11 +564,89 @@ int main()
 					 "GGE.... SGE.... HGE.... MGE.... DC?....", messages6);
 	assert(getScore(gv) == 0);
 	assert(getRound(gv) == 366);
-    printf("passed\n");
-
-
-
+   printf("passed\n");
 	disposeGameView(gv);
+
+	
+	 printf("Testing that the life points do not exceed 9\n");
+    gv = newGameView("GGE.... SGE.... HGE.... MGE.... DC?.... "
+                     "GGE.... SGE.... HGF.... MGE.... DC?...."
+							"GGE.... SGE.... HGF.... MGE.... DC?....", messages5);
+	assert(getHealth(gv, PLAYER_LORD_GODALMING) == 9);
+	assert(getHealth(gv, PLAYER_DR_SEWARD) == 9);
+	assert(getHealth(gv, PLAYER_VAN_HELSING) == 9);
+	assert(getHealth(gv, PLAYER_MINA_HARKER) == 9);
+	printf("Passed\n");
+	disposeGameView(gv);
+	
+	printf("Testing What happens when hunters die\n");
+   gv = newGameView("GGE.... SGE.... HGE.... MGE.... DPA.... "
+                    "GPAD... SGE.... HGE.... MGE.... DBU.... "
+                    "GBUD... SGE.... HGE.... MGE.... DST.... "
+                    "GSTD...", messages5);
+
+   assert(getHealth(gv, PLAYER_DRACULA) ==
+           GAME_START_BLOOD_POINTS - 3 * LIFE_LOSS_HUNTER_ENCOUNTER);
+   assert(getHealth(gv, PLAYER_LORD_GODALMING)  <= 0);
+   assert(getScore(gv) == GAME_START_SCORE - SCORE_LOSS_HUNTER_HOSPITAL - 3);
+   assert(getLocation(gv, PLAYER_LORD_GODALMING) == ST_JOSEPH_AND_ST_MARYS);
+	printf("passed\n");
+	disposeGameView(gv);
+   
+
+	
+    printf("Testing post condition hunter dying\n");
+    gv = newGameView("GGE.... SGE.... HGE.... MGE.... DPA.... "
+                    "GPAD... SGE.... HGE.... MGE.... DBU.... "
+                    "GBUD... SGE.... HGE.... MGE.... DST.... "
+                    "GSTD... SGE.... HGE.... MGE.... DCO.... "
+                    "GFR....", messages5);
+    assert(getHealth(gv, PLAYER_DRACULA) ==
+            GAME_START_BLOOD_POINTS - 3 * LIFE_LOSS_HUNTER_ENCOUNTER);
+    assert(getHealth(gv, PLAYER_LORD_GODALMING) == GAME_START_HUNTER_LIFE_POINTS);
+    assert(getScore(gv) == GAME_START_SCORE - SCORE_LOSS_HUNTER_HOSPITAL - 4);
+    assert(getLocation(gv, PLAYER_LORD_GODALMING) == FRANKFURT);
+    printf("passed\n");
+    disposeGameView(gv);
+   
+	
+	//GAME SCORE
+	//Dracula vampire matures after 6 rounds: -13 points
+	printf("Testing the score decreases for mature vampire\n");
+  
+   gv = newGameView("GST.... SAO.... HZU.... MBB.... DCF.V.. "
+                    "GST.... SAO.... HZU.... MBB.... DBOT... "
+                    "GST.... SAO.... HZU.... MBB.... DTOT... "
+                    "GST.... SAO.... HZU.... MBB.... DBAT... "
+                    "GST.... SAO.... HZU.... MBB.... DSRT... "
+                    "GST.... SAO.... HZU.... MBB.... DCDT..."
+					  	  "GST.... SAO.... HZU.... MBB.... DHI..V.", messages5);
+	
+    assert(getScore(gv) == GAME_START_SCORE - 6 - SCORE_LOSS_VAMPIRE_MATURES);
+	 printf("Score %d \n", getScore(gv));
+    printf("passed\n");
+    disposeGameView(gv);
+    printf("\n");
+	 
+	 //LOCATION
+	 //Hunter life points is 0: location is st joseph/ mary
+	 //Check hunter life points
+	 
+	 //DRACULA
+	 //Dracula starts with 40 blood points
+	 //Dracula encounters hunter: - 10 blood points
+	 //Dracula is at sea at end of turn: -2 points
+	 //Dracula is ends turn in Castle Dracula: +10 points
+	 //Dracula has no blood points: game is over Score= final score
+	 
+	 
+	 
+	 //No health lost while both are at sea/ trail stuffs
+	 
+	 
+
+
+
 
     return 0;
 }

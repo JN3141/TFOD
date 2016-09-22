@@ -10,6 +10,10 @@
 #include "encounter.h"
 #include "Map.h" //... if you decide to use the Map ADT
 #include "Places.h"
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/master
 
 typedef struct _player {
     int hp;                              // HP of the the player
@@ -190,10 +194,6 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 gameView->players[p].hp += 10;
             }
 
-            // edit the eTrail[]...
-            if (gameView->eTrail[TRAIL_SIZE-1].type == 'V') {
-                gameView->score -= 13;
-            }
 
             if (playTracker[3] == 'T') {
                 // adjust eTrail[]...
@@ -213,6 +213,7 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 gameView->eTrail[0].type = 'T';
 
             } else if (playTracker[4] == 'V') {
+
                 // adjust eTrail[]...
                 // newest at the front, oldest at the end...
 
@@ -229,6 +230,7 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                     placeToID(playTracker[1],playTracker[2]);
                 gameView->eTrail[0].type = 'V';
 
+
             }
 
             // deduct 1 point from the game score...
@@ -236,7 +238,20 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 gameView->score -= 1;
             }
 
+				// MATURED Vampire this isn't working properly
+				//etrail doesnt work here
+				//printf(" trail type %c\n",gameView->eTrail[TRAIL_SIZE-1].type);
+            if (gameView->eTrail[TRAIL_SIZE-1].type == 'V') {
+                gameView->score = gameView->score-13;
+            }
+
         } else { // it's a hunter!
+            // they were staying at the hospital the previous turn!
+            if (gameView->players[p].hp == 0 && (gameView->players[p].trail[1] ==
+                ST_JOSEPH_AND_ST_MARYS))  {
+                gameView->players[p].hp = 9;
+            }
+
             // immature vampires...
             if (playTracker[3] == 'V') {
                 for (j = 0; j < TRAIL_SIZE - 1; j++) {
@@ -331,8 +346,9 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
             }
 
             // automagical hospital teleport...
-            if (gameView->players[p].hp <= 0) {
-                gameView->players[p].hp = 9;
+            if (gameView->players[p].hp <= 0 && (gameView->players[p].trail[1] !=
+                    ST_JOSEPH_AND_ST_MARYS)) {
+                gameView->players[p].hp = 0;
                 for (j = GAME_START_SCORE - 1; j > 0; j--) {
                     gameView->players[p].trail[j] =
                         gameView->players[p].trail[j-1];
@@ -342,7 +358,7 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 gameView->players[p].location =
                     ST_JOSEPH_AND_ST_MARYS;
         	    gameView->score -= 6;
-    	    }
+            }
         }
     }
     return gameView;
