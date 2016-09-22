@@ -608,7 +608,25 @@ int main()
     assert(getLocation(gv, PLAYER_LORD_GODALMING) == FRANKFURT);
     printf("passed\n");
     disposeGameView(gv);
-
+   
+	
+	//GAME SCORE
+	//Dracula vampire matures after 6 rounds: -13 points
+	printf("Testing the score decreases for mature vampire\n");
+  
+   gv = newGameView("GST.... SAO.... HZU.... MBB.... DCF.V.. "
+                    "GST.... SAO.... HZU.... MBB.... DBOT... "
+                    "GST.... SAO.... HZU.... MBB.... DTOT... "
+                    "GST.... SAO.... HZU.... MBB.... DBAT... "
+                    "GST.... SAO.... HZU.... MBB.... DSRT... "
+                    "GST.... SAO.... HZU.... MBB.... DCDT..."
+					  	 "GST.... SAO.... HZU.... MBB.... DHI..V.", messages5);
+	
+    //assert(getScore(gv) == GAME_START_SCORE - 6 - SCORE_LOSS_VAMPIRE_MATURES);
+	 printf("Score %d \n", getScore(gv));
+    printf("passed\n");
+    disposeGameView(gv);
+    printf("\n");
 	 
 	 //LOCATION
 	 //Hunter life points is 0: location is st joseph/ mary
@@ -621,8 +639,7 @@ int main()
 	 //Dracula is ends turn in Castle Dracula: +10 points
 	 //Dracula has no blood points: game is over Score= final score
 	 
-	 //GAME SCORE
-	 //Dracula vampire matures after 6 rounds: -13 points
+	 
 	 
 	 //No health lost while both are at sea/ trail stuffs
 	 

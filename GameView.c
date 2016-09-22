@@ -191,7 +191,7 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 gameView->players[p].hp += 10;
             }
 
-            // edit the eTrail[]...
+            // MATURED Vampire
             if (gameView->eTrail[TRAIL_SIZE-1].type == 'V') {
                 gameView->score -= 13;
             }
