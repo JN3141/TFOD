@@ -332,8 +332,9 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
             }
 
             // automagical hospital teleport...
-            if (gameView->players[p].hp <= 0) {
-                gameView->players[p].hp = 9;
+            if (gameView->players[p].hp <= 0 && (gameView->players[p].location !=
+                    ST_JOSEPH_AND_ST_MARYS)) {
+                gameView->players[p].hp = 0;
                 for (j = GAME_START_SCORE - 1; j > 0; j--) {
                     gameView->players[p].trail[j] =
                         gameView->players[p].trail[j-1];
@@ -343,7 +344,12 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                 gameView->players[p].location =
                     ST_JOSEPH_AND_ST_MARYS;
         	    gameView->score -= 6;
-    	    }
+				 //minor : their health only changes in the next turn
+				}else if (gameView->players[p].hp == 0 && (gameView->players[p].location ==
+                    ST_JOSEPH_AND_ST_MARYS))  {
+					gameView->players[p].hp = 9;
+				}
+				
         }
     }
     return gameView;

@@ -569,7 +569,6 @@ int main()
 	 //Testing general Game rules
 	 //Hunter encounters Dracula: - 4 lifepoins
 	 //Hunter gains starts and ends in same city: + 3 life poins
-	 
 	  //Hunter doesn' exceed 9 life points
 	 printf("Testing that the life points do not exceed 9\n");
     gv = newGameView("GGE.... SGE.... HGE.... MGE.... DC?.... "
@@ -579,8 +578,22 @@ int main()
 	assert(getHealth(gv, PLAYER_DR_SEWARD) == 9);
 	assert(getHealth(gv, PLAYER_VAN_HELSING) == 9);
 	assert(getHealth(gv, PLAYER_MINA_HARKER) == 9);
+	printf("Passed\n");
+	
+	printf("Testing What happens when hunters die\n");
+   gv = newGameView("GGE.... SGE.... HGE.... MGE.... DPA.... "
+                    "GPAD... SGE.... HGE.... MGE.... DBU.... "
+                    "GBUD... SGE.... HGE.... MGE.... DST.... "
+                    "GSTD...", messages5);
 
-		
+   assert(getHealth(gv, PLAYER_DRACULA) ==
+           GAME_START_BLOOD_POINTS - 3 * LIFE_LOSS_HUNTER_ENCOUNTER);
+   assert(getHealth(gv, PLAYER_LORD_GODALMING)  <= 0);
+   assert(getScore(gv) == GAME_START_SCORE - SCORE_LOSS_HUNTER_HOSPITAL - 3);
+   assert(getLocation(gv, PLAYER_LORD_GODALMING) == ST_JOSEPH_AND_ST_MARYS);
+	printf("passed\n");
+   
+
 	
 	 
 	 //LOCATION
