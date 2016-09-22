@@ -10,7 +10,6 @@
 #include "encounter.h"
 #include "Map.h" //... if you decide to use the Map ADT
 #include "Places.h"
-#include "Queue.h"
 
 typedef struct _player {
     int hp;                              // HP of the the player
